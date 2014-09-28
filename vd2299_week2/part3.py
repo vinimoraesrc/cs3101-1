@@ -17,8 +17,6 @@ def query():
 
     f = open('markets.tsv', 'r',  encoding="iso-8859-1")
 
-    markets = []
-
     zip_to_tuple = {}
     town_to_zip = {}
 
@@ -26,20 +24,19 @@ def query():
     for l in f:
         t = tuple(l.strip().split('\t'))
 
-        markets.append(t)
-
         zip_code = t[4]
-        town = t[0]
+        town = t[3]
 
         if zip_code not in zip_to_tuple:
-            zip_to_tuple[zip_code] = t
+            zip_to_tuple[zip_code] = [t]
         else:
-            zip_to_tuple[zip_code] += t
+            zip_to_tuple[zip_code] += [t]
 
         if town not in town_to_zip:
             town_to_zip[town] = [zip_code]
         else:
-            town_to_zip[town] += [zip_code]
+            if zip_code not in town_to_zip[town]:
+                town_to_zip[town] += [zip_code]
 
         # Some queries, such as '', may present encoding errors, so I 
         # used this workaround to limit the number of lines read while
@@ -93,8 +90,11 @@ def database():
         elif l.isdigit(): # zip code
 
             if l in zip_to_tuple:
-                i = zip_to_tuple[l]
-                print (format(i[0], i[1], i[2], i[3], i[4]))
+                for i in zip_to_tuple[l]:
+                    try:
+                        print (format(i[0], i[1], i[2], i[3], i[4]))
+                    except:
+                        print ("Cannot print line due to enconding problems.\n")
 
             else:
                 print ("Zip code {0} is not on the database.\n".format(l))
@@ -104,20 +104,21 @@ def database():
             if l in town_to_zip:
 
                 for i in town_to_zip[l]:
-                    tmp = zip_to_tuple[i]
-                    print (format(tmp[0], tmp[1], tmp[2], tmp[3], tmp[4]))
+                    for j in zip_to_tuple[i]:
+                        try:
+                            print (format(j[0], j[1], j[2], j[3], j[4]))
+                        except:
+                            print ("Cannot print line due to enconding problems.\n")
 
             else:
                 print ("Town {0} is not on the database.\n".format(l))
 
-#zip_to_tuple, town_to_zip = query()
-
 # Unit tests for item (a)
 #print (zip_to_tuple['49770'])
-#print (town_to_zip['Michigan'])
+#print (town_to_zip['Albertville'])
 
 # Unit tests for item (b)
-#for i in town_to_zip['Texas']:
+#for i in town_to_zip['Albertville']:
 #    tmp = zip_to_tuple[i]
 #    print (format(tmp[0], tmp[1], tmp[2], tmp[3], tmp[4]))
 
